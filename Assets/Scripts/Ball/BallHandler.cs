@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using ElementType = UniudSummerCamp2025_2nd.ElementsListSO.ElementType;
@@ -184,9 +185,32 @@ namespace UniudSummerCamp2025_2nd
             foreach (ParticleSystem particle in explosionParticles)
             {
                 particle.Play();
+                ParticleSystem.ShapeModule shape = particle.shape;
+                shape.radius = 0f;
             }
 
-            // Invoke(nameof(StopExplosion), explosionDuration);
+            StartCoroutine(nameof(AnimateExplosion));
+        }
+
+        private IEnumerator AnimateExplosion()
+        {
+            float explosionDuration = ballData.explodeEffect.length;
+            float explosionRadius = ballData.explosionRadius;
+            float timer = 0;
+            float currentSize = 0;
+            while (currentSize < explosionRadius)
+            {
+                timer += Time.deltaTime;
+                currentSize = Mathf.Lerp(0, explosionRadius, timer / explosionDuration);
+
+                foreach (ParticleSystem particle in explosionParticles)
+                {
+                    ParticleSystem.ShapeModule shape = particle.shape;
+                    shape.radius = currentSize;
+                }
+
+                yield return new WaitForEndOfFrame();
+            }
         }
 
         private void StopExplosionVisual()
